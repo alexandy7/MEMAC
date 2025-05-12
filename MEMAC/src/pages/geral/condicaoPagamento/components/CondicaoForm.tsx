@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,7 +17,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { CondicaoPagamento, CondicaoPagamentoFormData } from "@/types/CondicaoPagamento";
 
 const formSchema = z.object({
-    code: z.string().min(1, "O código é obrigatório"),
+    codigo: z.string().min(1, "O código é obrigatório"),
     descricaoCompleta: z.string().min(3, "A descrição completa deve ter pelo menos 3 caracteres"),
     descricaoReduzida: z.string().min(2, "A descrição reduzida deve ter pelo menos 2 caracteres"),
     diasVencimento: z.coerce.number().int().min(0, "Número de dias deve ser maior ou igual a 0"),
@@ -39,7 +39,7 @@ export default function CondicaoForm({
 }: PaymentConditionFormProps) {
     const form = useForm<CondicaoPagamentoFormData>({
         resolver: zodResolver(formSchema),
-        defaultValues: initialData ? {
+        defaultValues: initialData != undefined ? {
             codigo: initialData.codigo,
             descricaoCompleta: initialData.descricaoCompleta,
             descricaoReduzida: initialData.descricaoReduzida,
@@ -55,11 +55,31 @@ export default function CondicaoForm({
     });
 
     function handleSubmit(data: CondicaoPagamentoFormData) {
+        console.log("FOI");
         onSubmit(data);
         form.reset();
         onOpenChange(false);
         toast.success("Condição de pagamento salva com sucesso!");
     }
+    useEffect(() => {
+        if (initialData) {
+            form.reset({
+                codigo: initialData.codigo,
+                descricaoCompleta: initialData.descricaoCompleta,
+                descricaoReduzida: initialData.descricaoReduzida,
+                diasVencimento: initialData.diasVencimento,
+                diasDesconto: initialData.diasDesconto,
+            });
+        } else {
+            form.reset({
+                codigo: "",
+                descricaoCompleta: "",
+                descricaoReduzida: "",
+                diasVencimento: 0,
+                diasDesconto: 0,
+            });
+        }
+    }, [initialData]);
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
